@@ -55,6 +55,7 @@ def call_on_event(sc_event):
             'test_mode': sc_event.test_mode,
             'extra': {'network': network}
         }
+        print(event_data)
         handle_event.delay(event_data)
     except Exception as e:
         logger.warning(e)
@@ -98,10 +99,14 @@ def custom_background_code():
 def main(**options):
     parser = ArgumentParser()
     parser.add_argument("-m", "--mainnet", dest="mainnet",
-                        help="user mainnet", default=None)
+                        help="use main network", default=None)
+    parser.add_argument("-p", "--privnet", dest="privnet",
+                        help="use private network", default=None)
     args = parser.parse_args()
     if args.mainnet:
         settings.setup_mainnet()
+    elif args.privnet:
+        settings.setup_privnet()
     else:
         settings.setup_testnet()
 
