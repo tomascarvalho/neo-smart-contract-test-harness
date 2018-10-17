@@ -1,6 +1,8 @@
 from celery import Task, Celery, shared_task
 from settings import redis_url
 from models import Session, TestCase
+from settings import NODE_ENDPOINT
+import requests
 # from configuration.settings import redis_url
 
 app = Celery('tasks', broker = redis_url)
@@ -16,10 +18,6 @@ class DatabaseTask(Task):
 
 @shared_task(base=DatabaseTask)
 def handle_event(sc_event):
-    #network = sc_event['extra']['network']
-    # hooks = Hook.objects.filter(contract=sc_event['contract_hash'], network=network)
-    # for hook in hooks:
-
     test_cases = handle_event.session.query(TestCase).\
         filter_by(contract_hash=sc_event['contract_hash'], event_type=sc_event['event_type'], active=True)
 
@@ -30,11 +28,7 @@ def handle_event(sc_event):
 
 @shared_task(base=DatabaseTask)
 def evaluate(sc_event, id):
-    # response = requests.post('localhost:1234', json=sc_event, timeout=10)
-    # if response.status_code != 200:
-    #     raise RuntimeError('Invalid response, will retry later')
     test_case = evaluate.session.query(TestCase).get(id)
-    print('TestCase: ', test_case)
     s ="""\n\n
         -------------------------------------
                     Event Received!
@@ -52,7 +46,18 @@ def evaluate(sc_event, id):
     if sc_event['event_type'] == test_case.event_type.value and sc_event_payload['type'] == test_case.expected_payload_type.value:
         if str(sc_event_payload['value']) == test_case.expected_payload_value:
             print("Passed!")
-            test_case.active = False # In production we need to save and commit this
-            return True
-    print("Failed!")
+            test_case.active = False
+            test_case.success = True
+        else:
+            print("Failed!")
+            test_case.active = False
+            test_case.success = False
+        evaluate.session.add(test_case)
+        try:
+            evaluate.session.commit()
+        except:
+            evaluate.session.rollback()
+            raise
+        finally:
+            evaluate.session.close()
     return True

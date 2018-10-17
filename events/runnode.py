@@ -55,7 +55,7 @@ def call_on_event(sc_event):
             'test_mode': sc_event.test_mode,
             'extra': {'network': network}
         }
-        print(event_data)
+        logger.info(event_data)
         handle_event.delay(event_data)
     except Exception as e:
         logger.warning(e)
@@ -77,6 +77,9 @@ def custom_background_code():
         try:
             logger.info(f"Block {str(Blockchain.Default().Height)} / {str(Blockchain.Default().HeaderHeight)}")
             logger.info(f"Connected to {len(NodeLeader.Instance().Peers)} peers.")
+            for peer in NodeLeader.Instance().Peers:
+                logger.info(peer.Address)
+            logger.info("\n")
             if previous_block_count == Blockchain.Default().Height:
                 counter += 1
                 if counter % 5 == 0:
@@ -92,23 +95,27 @@ def custom_background_code():
             NodeLeader.Instance().Shutdown()
             NodeLeader.Instance().Start()
             counter = 0
-        sleep(60)
+        sleep(15)
 
 
 
 def main(**options):
-    parser = ArgumentParser()
-    parser.add_argument("-m", "--mainnet", dest="mainnet",
-                        help="use main network", default=None)
-    parser.add_argument("-p", "--privnet", dest="privnet",
-                        help="use private network", default=None)
-    args = parser.parse_args()
-    if args.mainnet:
-        settings.setup_mainnet()
-    elif args.privnet:
-        settings.setup_privnet()
-    else:
-        settings.setup_testnet()
+    # parser = ArgumentParser()
+    # parser.add_argument("-m", "--mainnet", dest="mainnet",
+    #                     help="use main network", default=None)
+    # parser.add_argument("-p", "--privnet", dest="privnet",
+    #                     help="use private network", default=None)
+    # parser.add_argument("-t", "--testnet", dest="testnet",
+    #                     help="use coz testnetwork", default=None)
+    # args = parser.parse_args()
+    # if args.mainnet:
+    #     settings.setup_mainnet()
+    # elif args.privnet:
+    #     settings.setup_privnet()
+    # elif args.testnet:
+    #     settings.setup_testnet()
+    settings.setup_privnet()
+
 
     # Setup the blockchain
     blockchain = LevelDBBlockchain(settings.chain_leveldb_path)

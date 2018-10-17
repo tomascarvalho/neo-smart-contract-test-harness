@@ -36,7 +36,7 @@ class TestCase(Base):
         ('SmartContract.Verification.Fail',         'SmartContract.Verification.Fail'),
         ('SmartContract.Storage.*',                 'SmartContract.Storage.*'),
         ('SmartContract.Storage.Get',               'SmartContract.Storage.Get'),
-        ('SmartContract.Storage.Pu',                'SmartContract.Storage.Put'),
+        ('SmartContract.Storage.Put',               'SmartContract.Storage.Put'),
         ('SmartContract.Storage.Delete',            'SmartContract.Storage.Delete'),
         ('SmartContract.Contract.*',                'SmartContract.Contract.*'),
         ('SmartContract.Contract.Create',           'SmartContract.Contract.Create'),
@@ -51,7 +51,9 @@ class TestCase(Base):
     expected_payload_type   = Column(ChoiceType(DATA_TYPES))
     expected_payload_value  = Column(String(512))
     active                  = Column(Boolean, default=True)
-    created_at              = Column(DateTime, default=datetime.now)
+    success                 = Column(Boolean, default=None)
+    createdAt               = Column(DateTime, default=datetime.now)
+    updatedAt               = Column(DateTime, default=datetime.now)
 
     def __repr__(self):
         return "<TestCase(test_id='%s' contract_hash='%s' event='%s' expected_payload_type='%s expected_payload_value='%s' active='%s')>" % (
@@ -62,3 +64,4 @@ class TestCase(Base):
 engine = create_engine(database_url)
 Session = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
+engine.dispose()
