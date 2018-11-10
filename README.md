@@ -14,6 +14,6 @@ A testing harness allowing a user to create unit tests for NEO smart contracts
 * Activate the virtual environment `source venv/bin/activate`
 * Install requirements `pip install -r requirements.txt`
 * Run redis `redis-server`
-* cd to tasks folder `cd tasks`
+* cd to events folder `cd events`
 * Run celery `celery -A tasks worker -l info`
 * Run the node listener `python runnode.py`

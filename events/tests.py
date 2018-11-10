@@ -3,7 +3,6 @@ import unittest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, TestCase
-from tasks import handle_event
 from settings import database_url_tests
 
 class TestCaseAssertion(unittest.TestCase):
@@ -38,7 +37,7 @@ class TestCaseAssertion(unittest.TestCase):
 
     def test_test_case_creation(self):
         # use the session in tests.
-        test_case = TestCase(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', event_type='SmartContract.Runtime.Log', expected_payload_type='String', expected_payload_value='Contract was called')
+        test_case = TestCase(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', transaction_hash='c33fd08be47a978778f1c7098804d8339ce6ec4002e8e7de580552785dca80f5' event_type='SmartContract.Runtime.Log', expected_payload_type='String', expected_payload_value='Contract was called')
         self.test_session.add(test_case)
         self.test_session.commit()
         t_case = self.test_session.query(TestCase).filter_by(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', event_type='SmartContract.Runtime.Log').first()

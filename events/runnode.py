@@ -11,7 +11,6 @@ from __future__ import absolute_import, unicode_literals
 
 import threading
 from time import sleep
-from argparse import ArgumentParser
 
 from logzero import logger
 from neo.Core.Blockchain import Blockchain
@@ -60,6 +59,7 @@ def call_on_event(sc_event):
     except Exception as e:
         logger.warning(e)
 
+
 def custom_background_code():
     """ Custom code run in a background thread. Prints the current block height.
 
@@ -98,24 +98,8 @@ def custom_background_code():
         sleep(15)
 
 
-
 def main(**options):
-    # parser = ArgumentParser()
-    # parser.add_argument("-m", "--mainnet", dest="mainnet",
-    #                     help="use main network", default=None)
-    # parser.add_argument("-p", "--privnet", dest="privnet",
-    #                     help="use private network", default=None)
-    # parser.add_argument("-t", "--testnet", dest="testnet",
-    #                     help="use coz testnetwork", default=None)
-    # args = parser.parse_args()
-    # if args.mainnet:
-    #     settings.setup_mainnet()
-    # elif args.privnet:
-    #     settings.setup_privnet()
-    # elif args.testnet:
-    #     settings.setup_testnet()
     settings.setup_privnet()
-
 
     # Setup the blockchain
     blockchain = LevelDBBlockchain(settings.chain_leveldb_path)
@@ -143,6 +127,7 @@ def main(**options):
     NotificationDB.close()
     Blockchain.Default().Dispose()
     NodeLeader.Instance().Shutdown()
+
 
 if __name__ == "__main__":
     main()

@@ -2,6 +2,7 @@ class Error(Exception):
     """Base class for exceptions in this module."""
     pass
 
+
 class NodeBlockingException(Error):
     """Exception raised when a node is blocking.
 
@@ -13,3 +14,7 @@ class NodeBlockingException(Error):
     def __init__(self, expression, message):
         self.expression = expression
         self.message = message
+
+
+class NoTransactionFound(Exception):
+    pass
