@@ -51,7 +51,7 @@ class TestCase(Base):
     event_type = Column(ChoiceType(EVENT_TYPES))
     expected_payload_type = Column(ChoiceType(DATA_TYPES))
     expected_payload_value = Column(String(512))
-    sc_event = Column(String(512))
+    sc_event = Column(String(1024))
     active = Column(Boolean, default=True)
     success = Column(Boolean, default=None)
     createdAt = Column(DateTime, default=datetime.now)
