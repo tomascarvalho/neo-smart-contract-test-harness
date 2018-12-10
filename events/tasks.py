@@ -2,7 +2,7 @@ import json
 from celery import Task, Celery, shared_task
 from exceptions import NoTransactionFound
 from models import Session, TestCase
-from settings import NODE_ENDPOINT, redis_url
+from settings import redis_url
 
 app = Celery('tasks', broker=redis_url)
 
@@ -17,7 +17,7 @@ class DatabaseTask(Task):
         return self._session
 
 
-@shared_task(base=DatabaseTask, autoretry_for=(NoTransactionFound,), default_retry_delay=0.5, max_retries=5,
+@shared_task(base=DatabaseTask, autoretry_for=(NoTransactionFound,), default_retry_delay=0.5, max_retries=10,
              retry_backoff=True)
 def handle_event(sc_event):
     """
