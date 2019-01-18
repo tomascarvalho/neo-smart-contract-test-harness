@@ -1,7 +1,4 @@
 """
-Example of running a NEO node and receiving notifications when events
-of a specific smart contract happen.
-
 Events include Runtime.Notify, Runtime.Log, Storage.*, Execution.Success
 and several more. See the documentation here:
 
@@ -23,25 +20,35 @@ from twisted.internet import reactor, task
 
 from exceptions import NodeBlockingException
 from tasks import handle_event
-# This will make sure the app is always imported when
-# Django starts so that shared_task will use this app.
 from tasks import app as celery_app
 
 __all__ = ('celery_app',)
-
 
 @events.on(SmartContractEvent.RUNTIME_NOTIFY)
 @events.on(SmartContractEvent.RUNTIME_LOG)
 @events.on(SmartContractEvent.EXECUTION_SUCCESS)
 @events.on(SmartContractEvent.EXECUTION_FAIL)
-@events.on(SmartContractEvent.STORAGE)
+@events.on(SmartContractEvent.EXECUTION_INVOKE)
+@events.on(SmartContractEvent.VERIFICATION_FAIL)
+@events.on(SmartContractEvent.VERIFICATION_SUCCESS)
+@events.on(SmartContractEvent.STORAGE_DELETE)
+@events.on(SmartContractEvent.STORAGE_GET)
+@events.on(SmartContractEvent.STORAGE_PUT)
+@events.on(SmartContractEvent.CONTRACT_CREATED)
+@events.on(SmartContractEvent.CONTRACT_DESTROY)
+@events.on(SmartContractEvent.CONTRACT_MIGRATED)
 def call_on_event(sc_event):
     """ Is called whenever an event occurs and puts event into queue.
 
     Event types can be found at:
     https://neo-python.readthedocs.io/en/latest/neo/SmartContract/smartcontracts.html#event-types
     """
-    network = 'mainnet' if settings.is_mainnet else 'testnet'
+    if settings.is_mainnet:
+        network = 'mainnet'
+    elif settings.is_testnet:
+        network = 'testnet' 
+    else:
+        network = 'privnet'
 
     try:
         event_data = {
@@ -69,7 +76,12 @@ def custom_background_code():
 
     Raises an exception every 5 minutes the block count is blocked and restarts the node
     """
-    network = 'Mainnet' if settings.is_mainnet else 'Testnet'
+    if settings.is_mainnet:
+        network = 'Mainnet'
+    elif settings.is_testnet:
+        network = 'Testnet' 
+    else:
+        network = 'Privnet'
     counter = 0
     previous_block_count = 0
 
