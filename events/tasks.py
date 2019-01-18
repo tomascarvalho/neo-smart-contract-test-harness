@@ -3,6 +3,7 @@ from celery import Task, Celery, shared_task
 from exceptions import NoTransactionFound
 from models import Session, TestCase
 from settings import redis_url
+from time import sleep
 
 app = Celery('tasks', broker=redis_url)
 
@@ -17,7 +18,7 @@ class DatabaseTask(Task):
         return self._session
 
 
-@shared_task(base=DatabaseTask, autoretry_for=(NoTransactionFound,), default_retry_delay=0.5, max_retries=10,
+@shared_task(base=DatabaseTask, autoretry_for=(NoTransactionFound,), default_retry_delay=1, max_retries=5,
              retry_backoff=True)
 def handle_event(sc_event):
     """
@@ -25,15 +26,16 @@ def handle_event(sc_event):
     :param sc_event: a smart contract event
     :return: True if task is successful, False otherwise
     """
+    sleep(1)
     try:
         test_case = handle_event.session.query(TestCase). \
             filter_by(contract_hash=sc_event['contract_hash'], transaction_hash=sc_event['tx_hash'],
                       event_type=sc_event['event_type'], active=True).first()
         if not test_case:
             print("Retrying...")
-            raise NoTransactionFound("No transaction found with tx_hash: " + sc_event['tx_hash'])
-    except NoTransactionFound:
-        pass
+            raise NoTransactionFound("No test found with tx_hash: " + sc_event['tx_hash'])
+    except NoTransactionFound as ntf:
+        print(ntf)
     else:
         evaluate.delay(sc_event, test_case.id)
     return True
@@ -70,16 +72,17 @@ def evaluate(sc_event, test_case_id):
 
         if sc_event['event_type'] == test_case.event_type.value and sc_event_payload['type'] == test_case.\
                 expected_payload_type.value:
+
+            test_case.sc_event = json.dumps(sc_event)
             if str(sc_event_payload['value']) == test_case.expected_payload_value:
                 print("Passed!")
-                test_case.sc_event = json.dumps(sc_event)
                 test_case.active = False
                 test_case.success = True
-        else:
-            print("Failed!")
-            test_case.sc_event = json.dumps(sc_event)
-            test_case.active = False
-            test_case.success = False
+                print("Setting test_case.success as TRUE")
+            else:
+                print("Failed!")
+                test_case.active = False
+                test_case.success = False
 
         evaluate.session.add(test_case)
         try:
