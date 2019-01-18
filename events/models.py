@@ -45,7 +45,7 @@ class TestCase(Base):
     ]
 
     __tablename__ = 'test_cases'
-    id = Column(Integer, Sequence('test_case_id_seq'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     contract_hash = Column(String(128))
     transaction_hash = Column(String(128))
     event_type = Column(ChoiceType(EVENT_TYPES))
@@ -58,13 +58,12 @@ class TestCase(Base):
     updatedAt = Column(DateTime, default=datetime.now)
 
     def __repr__(self):
-        return "<TestCase(test_id='%s' contract_hash='%s' contract_hash='%s' event='%s' expected_payload_type='%s " \
-               "expected_payload_value='%s' active='%s')>" % (
+        return "<TestCase(test_id='%s' contract_hash='%s' transaction_hash='%s' event='%s' expected_payload_type='%s " \
+               "expected_payload_value='%s' active='%s' success='%s')>" % (
                    self.id, self.contract_hash, self.transaction_hash, self.event_type, self.expected_payload_type,
-                   self.expected_payload_value, self.active)
+                   self.expected_payload_value, self.active, self.success)
 
 
 engine = create_engine(database_url)
 Session = sessionmaker(bind=engine)
-Base.metadata.create_all(engine)
 engine.dispose()
