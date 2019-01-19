@@ -5,7 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, TestCase
 from settings import database_url_tests
-from tasks import handle_event
 
 class TestCaseAssertion(unittest.TestCase):
     # uses test database
@@ -55,7 +54,10 @@ class TestCaseAssertion(unittest.TestCase):
             )
         self.test_session.add(test_case)
         self.test_session.commit()
-        t_case = self.test_session.query(TestCase).filter_by(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', event_type='SmartContract.Runtime.Log').first()
+        t_case = self.test_session.query(TestCase).filter_by(
+                contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', 
+                transaction_hash='c33fd08be47a978778f1c7098804d8339ce6ec4002e8e7de580552785dca80f5', 
+                event_type='SmartContract.Runtime.Log').first()
         self.assertEqual(test_case, t_case)
 
     def test_find_related_test_case(self):
@@ -84,7 +86,7 @@ class TestCaseAssertion(unittest.TestCase):
 
         self.assertEqual(test_case, found_test_case)
     
-    def test_assess_should_eql_true(self):
+    def test_success_should_eql_true(self):
         # simulate test_case creation
         t_case = TestCase(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', 
                 transaction_hash='c33fd08be47a978778f1c7098804d8339ce6ec4002e8e7de580552785dca80f5', 
@@ -128,7 +130,7 @@ class TestCaseAssertion(unittest.TestCase):
         self.assertEqual(test_case.active, False)
         self.assertEqual(test_case.success, True)
 
-    def test_assess_should_eql_false(self):
+    def test_success_should_eql_false(self):
         # simulate test_case creation
         t_case = TestCase(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', 
                 transaction_hash='c33fd08be47a978778f1c7098804d8339ce6ec4002e8e7de580552785dca80f5', 
@@ -172,7 +174,7 @@ class TestCaseAssertion(unittest.TestCase):
         self.assertEqual(test_case.active, False)
         self.assertEqual(test_case.success, False)
 
-    def test_should_find_test_case(self):
+    def test_should_not_find_test_case(self):
         # simulate test_case creation
         t_case = TestCase(contract_hash='f3da12622e9bb2b3f367a650a81fd8c70b2eb495', 
                 transaction_hash='c33fd08be47a978778f1c7098804d8339ce6ec4002e8e7de580552785dca80f5', 
@@ -200,8 +202,6 @@ class TestCaseAssertion(unittest.TestCase):
         self.assertEqual(found_test_case, None)
 
 
-
-
     def tearDown(self):
         """
         tearDown is called when tests end to clean reset database
@@ -214,3 +214,6 @@ class TestCaseAssertion(unittest.TestCase):
         # return connection to the Engine
         self.connection.close()
         Base.metadata.drop_all(self.engine)
+
+if __name__ == '__main__':
+    unittest.main()
